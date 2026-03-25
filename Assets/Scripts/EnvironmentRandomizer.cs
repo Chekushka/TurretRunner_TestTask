@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class EnvironmentRandomizer : MonoBehaviour
@@ -6,7 +7,7 @@ public class EnvironmentRandomizer : MonoBehaviour
     [SerializeField] private Transform[] _spawnPoints;
     [Range(0, 1)] [SerializeField] private float _spawnChance = 0.5f;
 
-    private readonly System.Collections.Generic.List<GameObject> _activeProps = new();
+    private readonly List<GameObject> _activeProps = new();
 
     public void Randomize()
     {
