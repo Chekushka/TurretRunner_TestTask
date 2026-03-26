@@ -1,3 +1,4 @@
+using Core;
 using Unity.Cinemachine;
 using UnityEngine;
 using VContainer;
