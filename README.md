@@ -1,52 +1,46 @@
-TurretRunner
-TurretRunner is a dynamic hyper-casual mobile shooter prototype focused on clean architecture, high mobile performance, and "juicy" gameplay feedback.
+# TurretRunner
 
-Development Time: ~14 working hours.
+**TurretRunner** is a high-performance hyper-casual mobile shooter prototype. Developed with a focus on clean architectural patterns, efficient resource management, and high-fidelity "juice" (gameplay feedback), this project demonstrates a production-ready approach to mobile game development.
 
-Gameplay Features
-Dynamic Combat System: Swipe-controlled turret with precision Hitscan logic.
+> **Development Time:** ~14 working hours.
 
-Procedural Generation: Infinite road segment cycling with randomized environment props.
+---
 
-Level Progression: Real-time progress tracking and a cinematic finish sequence with side-view car rotation.
+## Gameplay Features
 
-Advanced UI: Per-character vertex animations (TextMeshPro TextInfo) for immersive Win/Loss screens.
+* **Swipe-to-Aim Combat**: Responsive turret mechanics with precision Hitscan logic.
+* **Procedural Road System**: Infinite segment cycling with randomized environment props to ensure varied gameplay.
+* **Dynamic Level Progress**: Real-time progress tracking via UI slider and a cinematic finish sequence.
+* **Polished UI/UX**: Custom per-character vertex animations using TextMeshPro `TextInfo` for "Win/Loss" states.
+* **Destruction Visuals**: Car damage visualized through Material Property Blocks (MPB) for optimized performance and particle-based environmental effects.
 
-Visual Damage System: Car destruction visualized via Material Property Blocks (MPB) for performance-friendly color shifts and particle-based fires.
+---
 
-Technical Highlights
-Dependency Injection (VContainer): Decoupled architecture using VContainer for clean dependency management and testability.
+## Technical Implementation
 
-Efficient Object Pooling: Customized pooling system for projectiles, enemies, VFX, and damage popups to minimize Garbage Collection.
+* **Dependency Injection (VContainer)**: Utilized for decoupled, maintainable, and testable code.
+* **Advanced Object Pooling**: Comprehensive pooling for projectiles, enemies, VFX, and damage popups to eliminate runtime Garbage Collection.
+* **Master Config (ScriptableObjects)**: Centralized game balance (speed, damage, crit rates) for rapid designer iteration without code changes.
+* **DOTween Pro**: Orchestrating all UI transitions, camera impulses, and smooth object rotations.
+* **Mobile-Optimized URP**: Lightweight Post-Processing stack featuring Bloom, Color Grading, and Vignette.
+* **Finite State Machine (FSM)**: Robust management of game flows: Menu -> ReadyToPlay -> Gameplay -> Won/Lost .
 
-Data-Driven Balance (ScriptableObjects): All game parameters (speed, damage, crit chance, spawn rates) are centralized in a single configuration file for rapid iteration [cite: 2026-03-27].
+---
 
-DOTween Integration: Powering UI interactions, camera movements, and game feedback loops.
+## Architecture & SoC
 
-Mobile-Optimized URP: Utilizing a lightweight Post-Processing stack (Bloom, Color Grading, Vignette) tailored for mobile GPU performance.
+The project strictly follows the **Separation of Concerns (SoC)** principle:
+* **Core**: State management, interfaces, and shared data structures.
+* **Infrastructure**: Dependency registration (LifetimeScope) and hardware input providers.
+* **Gameplay**: Independent systems for vehicle movement, health logic, and visual representation .
 
-Robust State Machine: Centralized management of game flow: Menu, ReadyToPlay, Gameplay, Won, and Lost.
+---
 
-Getting Started
-Clone the Repository: git clone https://github.com/your-username/TurretRunner.git.
+## Getting Started
 
-Unity Version: Developed using Unity 2022.3 LTS (or newer).
-
-Dependencies: Ensure VContainer, DOTween, and TextMeshPro are imported.
-
-Initial Setup:
-
-Open the Gameplay scene.
-
-Assign the GameSettings asset to the GameSettings field in the GameLifetimeScope component.
-
-Press Play.
-
-Architecture Overview
-The project follows the Separation of Concerns (SoC) principle:
-
-Core: Global states, interfaces, and game settings.
-
-Infrastructure: Dependency registration, input handling, and object resolvers.
-
-Gameplay: Isolated logic for movement, combat, and visual representation [cite: 2026-03-27].
+1.  **Clone the Repo**: `git clone https://github.com/your-username/TurretRunner.git`
+2.  **Unity Version**: Recommended 2022.3 LTS or newer.
+3.  **Dependencies**: Project requires **VContainer**, **DOTween**, and **TextMeshPro**.
+4.  **Configuration**: 
+    * Assign the `GameSettings` ScriptableObject to the `GameLifetimeScope` on the scene.
+    * Open `Gameplay.unity` scene and press **Play**.
