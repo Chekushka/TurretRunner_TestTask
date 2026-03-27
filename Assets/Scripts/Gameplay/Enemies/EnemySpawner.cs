@@ -18,13 +18,15 @@ namespace Gameplay.Enemies
 
         [Header("Limits")] [SerializeField] private int _maxActiveEnemies = 20;
 
-        [Header("References")] [SerializeField]
-        private Enemy _enemyPrefab;
+        [Header("References")] 
+        [SerializeField] private Enemy _enemyPrefab;
+        [SerializeField] private PooledParticle _deathParticlePrefab;
 
         private IGameStateProvider _stateProvider;
         private CarMovement _car;
         private CarHealth _carHealth;
         private IObjectPool<Enemy> _enemyPool;
+        private IObjectPool<PooledParticle> _deathParticlePool;
 
         private float _nextChunkZ;
         private int _currentActiveCount;
@@ -54,6 +56,19 @@ namespace Gameplay.Enemies
                 actionOnDestroy: enemy => Destroy(enemy.gameObject),
                 defaultCapacity: _maxActiveEnemies,
                 maxSize: _maxActiveEnemies + 10
+            );
+            
+            _deathParticlePool = new ObjectPool<PooledParticle>(
+                createFunc: () => {
+                    var particle = Instantiate(_deathParticlePrefab, transform);
+                    particle.Init(_deathParticlePool);
+                    return particle;
+                },
+                actionOnGet: particle => particle.gameObject.SetActive(true),
+                actionOnRelease: particle => particle.gameObject.SetActive(false),
+                actionOnDestroy: particle => Destroy(particle.gameObject),
+                defaultCapacity: 20,
+                maxSize: 50
             );
         }
 
@@ -107,7 +122,7 @@ namespace Gameplay.Enemies
                 Enemy enemy = _enemyPool.Get();
                 enemy.transform.position = spawnPos;
                 enemy.transform.SetPositionAndRotation(spawnPos, spawnRotation);
-                enemy.Init(_car.transform, _carHealth, _enemyPool);
+                enemy.Init(_car.transform, _carHealth, _enemyPool, _deathParticlePool);
             }
 
             _nextChunkZ += _chunkLenght;

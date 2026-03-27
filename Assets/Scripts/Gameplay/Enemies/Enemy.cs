@@ -18,7 +18,6 @@ namespace Gameplay.Enemies
         [Header("References")]
         [SerializeField] private Animator _animator;
         [SerializeField] private DamageVisualizer _damageVisualizer;
-        [SerializeField] private ParticleSystem _deathParticlesPrefab;
         
         [Header("UI")]
         [SerializeField] private GameObject _healthCanvasObject;
@@ -30,16 +29,18 @@ namespace Gameplay.Enemies
         private Transform _targetTransform;
         private IDamageable _targetHealth;
         private IObjectPool<Enemy> _pool;
+        private IObjectPool<PooledParticle> _deathParticlePool;
         
         private int _currentHealth;
         private EnemyState _currentState;
         private float _stunEndTime;
 
-        public void Init(Transform targetTransform, IDamageable targetHealth, IObjectPool<Enemy> pool)
+        public void Init(Transform targetTransform, IDamageable targetHealth, IObjectPool<Enemy> pool, IObjectPool<PooledParticle> deathParticlePool)
         {
             _targetTransform = targetTransform;
             _targetHealth = targetHealth;
             _pool = pool;
+            _deathParticlePool = deathParticlePool;
             
             _currentHealth = _maxHealth;
             _currentState = EnemyState.Idle;
@@ -160,12 +161,11 @@ namespace Gameplay.Enemies
         {
             _currentState = EnemyState.Dead;
             
-            if (_deathParticlesPrefab != null)
+            if (_deathParticlePool != null)
             {
-                ParticleSystem effect =  Instantiate(_deathParticlesPrefab, transform.position, Quaternion.identity);
+                PooledParticle effect = _deathParticlePool.Get();
                 Color stickmanColor = _damageVisualizer.GetOriginalColor();
-                var mainModule = effect.main;
-                mainModule.startColor = stickmanColor;
+                effect.Play(transform.position, stickmanColor);
             }
 
             ReturnToPool();

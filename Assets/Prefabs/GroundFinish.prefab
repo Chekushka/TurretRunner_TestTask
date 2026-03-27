@@ -54,7 +54,11 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 51f3b747b2a5ba34f955f417a075d9d0, type: 2}
     - target: {fileID: 919132149155446097, guid: a88ed1dcc749975449e75e10c22a3d41, type: 3}
       propertyPath: m_Name
-      value: Ground
+      value: GroundFinish
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: a88ed1dcc749975449e75e10c22a3d41, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

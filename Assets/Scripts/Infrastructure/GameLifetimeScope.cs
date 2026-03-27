@@ -1,4 +1,5 @@
 using Core;
+using Gameplay;
 using Gameplay.Car;
 using Gameplay.Enemies;
 using Gameplay.Environment;
@@ -18,6 +19,7 @@ namespace Infrastructure
             builder.RegisterComponentInHierarchy<RoadGenerator>();
             builder.RegisterComponentInHierarchy<EnemySpawner>();
             builder.RegisterComponentInHierarchy<CarHealth>();
+            builder.RegisterComponentInHierarchy<TurretController>();
         }
     }
 }

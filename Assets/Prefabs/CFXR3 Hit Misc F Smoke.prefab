@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 141433446842962275}
   - component: {fileID: 141433446842962268}
   - component: {fileID: 141433446842962273}
+  - component: {fileID: -3485923055624572683}
   m_Layer: 0
   m_Name: CFXR3 Hit Misc F Smoke
   m_TagString: Untagged
@@ -4939,6 +4940,18 @@ MonoBehaviour:
     shakesDelay: 0
   animatedLights: []
   fadeOutReference: {fileID: 0}
+--- !u!114 &-3485923055624572683
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 141433446842962269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f72dac94ba94cbebae4f2642b257596, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Gameplay.PooledParticle
 --- !u!1 &8122789944495389005
 GameObject:
   m_ObjectHideFlags: 0
