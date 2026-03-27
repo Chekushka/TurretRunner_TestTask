@@ -44,9 +44,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 668f43e5be667734bb9b80f3155d05a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoadGenerator
-  _levelDistance: 200
-  _segmentsInReserve: 5
-  _startSegment: {fileID: 6955715368093045964, guid: afb0d3c4c943d324c8a89f914970909d, type: 3}
+  _startSegmentPrefab: {fileID: 6955715368093045964, guid: afb0d3c4c943d324c8a89f914970909d, type: 3}
   _middleSegmentPrefab: {fileID: 6955715368093045964, guid: afb0d3c4c943d324c8a89f914970909d, type: 3}
-  _finishSegment: {fileID: 6955715368093045964, guid: 46bffa6b89c56084b91473ac9cf6c3d5, type: 3}
-  _carTransform: {fileID: 0}
+  _finishSegmentPrefab: {fileID: 6955715368093045964, guid: 46bffa6b89c56084b91473ac9cf6c3d5, type: 3}

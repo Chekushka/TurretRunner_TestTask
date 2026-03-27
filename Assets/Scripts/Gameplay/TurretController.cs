@@ -20,34 +20,29 @@ namespace Gameplay
         [SerializeField] private Bullet _bulletPrefab;
 
         [Header("Combat Settings")] 
-        [SerializeField] private float _fireRate = 0.15f;
-        [SerializeField] private int _damage = 34;
-        [SerializeField] private float _range = 40f;
-        [SerializeField] private float hitboxRadius = 0.5f;
+        [SerializeField] private float _hitboxRadius = 0.5f;
         [SerializeField] private float _damageVariance = 0.1f;
-        [SerializeField] private float _critChance = 0.2f;
-        [SerializeField] private float _critMultiplier = 1.5f;
         [SerializeField] private LayerMask _enemyLayer;
         
-        [Header("Movement and Feel")]
-        [SerializeField] private float _rotationSpeed = 15f;
-        [SerializeField] private float _maxAngle = 70f;
+        [Header("Feel")]
         [SerializeField] private float _recoilDistance = 0.2f;
         [SerializeField] private Vector3 _punchScale = new Vector3(1.1f, 1.1f, 1.1f);
 
         private IGameStateProvider _stateProvider;
         private IGameInputProvider _inputProvider;
         private IObjectPool<Bullet> _bulletPool;
+        private GameSettings _settings;
         
         private float _currentAngle;
         private float _nextFireTime;
         private Vector3 _initialHeadLocalPosition;
 
         [Inject]
-        public void Construct(IGameStateProvider stateProvider, IGameInputProvider inputProvider)
+        public void Construct(IGameStateProvider stateProvider, IGameInputProvider inputProvider, GameSettings settings)
         {
             _stateProvider = stateProvider;
             _inputProvider = inputProvider;
+            _settings = settings;
         }
 
         private void Awake()
@@ -81,8 +76,8 @@ namespace Gameplay
         {
             if (!_inputProvider.IsTouching) return;
             
-            float delta = _inputProvider.SwipeDeltaX * _rotationSpeed * Time.deltaTime;
-            _currentAngle = Mathf.Clamp(_currentAngle + delta, -_maxAngle, _maxAngle);
+            float delta = _inputProvider.SwipeDeltaX * _settings.RotationSpeed * Time.deltaTime;
+            _currentAngle = Mathf.Clamp(_currentAngle + delta, -_settings.MaxAngle, _settings.MaxAngle);
             
             _turretHead.localRotation = Quaternion.Euler(0f, _currentAngle, 0f);
         }
@@ -96,7 +91,7 @@ namespace Gameplay
                 if (Time.time >= _nextFireTime)
                 {
                     Shoot();
-                    _nextFireTime = Time.time + _fireRate;
+                    _nextFireTime = Time.time + _settings.FireRate;
                 }
             }
             else
@@ -109,22 +104,22 @@ namespace Gameplay
         {
             PlayShootEffects();
             
-            Vector3 hitPoint = _firePoint.position + _firePoint.forward * _range;
+            Vector3 hitPoint = _firePoint.position + _firePoint.forward * _settings.WeaponRange;
             IDamageable target = null;
             
-            if(Physics.SphereCast(_firePoint.position, hitboxRadius, _firePoint.forward, out RaycastHit hit, _range, _enemyLayer))
+            if(Physics.SphereCast(_firePoint.position, _hitboxRadius, _firePoint.forward, out RaycastHit hit, _settings.WeaponRange, _enemyLayer))
             {
                 hitPoint = hit.point;
                 hit.collider.TryGetComponent(out target);
             }
             
             float randomModifier = Random.Range(1f - _damageVariance, 1f + _damageVariance);
-            int finalDamage = Mathf.RoundToInt(_damage * randomModifier);
+            int finalDamage = Mathf.RoundToInt(_settings.WeaponDamage * randomModifier);
             
-            bool isCritical = Random.Range(0f, 1f) <= _critChance;
+            bool isCritical = Random.Range(0f, 1f) <= _settings.CritChance;
             if (isCritical)
             {
-                finalDamage = Mathf.RoundToInt(finalDamage * _critMultiplier);
+                finalDamage = Mathf.RoundToInt(finalDamage * _settings.CritMultiplier);
             }
 
             Bullet bullet = _bulletPool.Get();
@@ -138,9 +133,9 @@ namespace Gameplay
             _turretHead.DOKill(true);
             _turretHead.localPosition = _initialHeadLocalPosition;
             
-            _turretHead.DOLocalMoveZ(_initialHeadLocalPosition.z - _recoilDistance, _fireRate * 0.4f)
+            _turretHead.DOLocalMoveZ(_initialHeadLocalPosition.z - _recoilDistance, _settings.FireRate * 0.4f)
                 .SetLoops(2, LoopType.Yoyo);
-            _turretHead.DOPunchScale(_punchScale - Vector3.one, _fireRate * 0.8f, 10, 1);
+            _turretHead.DOPunchScale(_punchScale - Vector3.one, _settings.FireRate * 0.8f, 10, 1);
         }
 
         private void DrawLaser()
@@ -148,13 +143,13 @@ namespace Gameplay
             _laserLine.enabled = true;
             _laserLine.SetPosition(0, transform.position);
             
-            if(Physics.SphereCast(_firePoint.position, hitboxRadius, _firePoint.forward, out RaycastHit hit, _range, _enemyLayer))
+            if(Physics.SphereCast(_firePoint.position, _hitboxRadius, _firePoint.forward, out RaycastHit hit, _settings.WeaponRange, _enemyLayer))
             {
                 _laserLine.SetPosition(1, hit.point);
             }
             else
             {
-                _laserLine.SetPosition(1, _firePoint.position + _firePoint.forward * _range);
+                _laserLine.SetPosition(1, _firePoint.position + _firePoint.forward * _settings.WeaponRange);
             }
         }
     }

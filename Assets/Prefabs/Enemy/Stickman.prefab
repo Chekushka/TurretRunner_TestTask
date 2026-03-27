@@ -515,6 +515,18 @@ PrefabInstance:
       value: 6
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a187c822d755f5641925dbdc1b092711, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a187c822d755f5641925dbdc1b092711, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a187c822d755f5641925dbdc1b092711, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a187c822d755f5641925dbdc1b092711, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -797,12 +809,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 944005f77b52417393ed97d96851a531, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
-  _moveSpeed: 5
-  _detectionRadius: 15
-  _attackRadius: 4.5
-  _maxHealth: 100
-  _damageToCar: 10
-  _stunDuration: 0.4
   _animator: {fileID: 763356092230414537}
   _damageVisualizer: {fileID: 4324246375099006991}
   _healthCanvasObject: {fileID: 946551288479484863}
@@ -875,6 +881,7 @@ MonoBehaviour:
   _flashColor: {r: 1, g: 1, b: 1, a: 1}
   _flashDuration: 0.3
   _punchScale: 0.1
+  _deadColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
 --- !u!4 &9186259422700699725 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: a187c822d755f5641925dbdc1b092711, type: 3}

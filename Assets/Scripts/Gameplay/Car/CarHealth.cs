@@ -11,17 +11,18 @@ namespace Gameplay.Car
     public class CarHealth : MonoBehaviour, IDamageable
     {
         [Header("Settings")]
-        [SerializeField] private int _maxHealth = 500;
         [SerializeField] private Slider _healthSlider;
 
         private int _currentHealth;
         private IGameStateProvider _stateProvider;
         private CarVisuals _visuals;
+        private GameSettings _settings;
 
         [Inject]
-        public void Construct(IGameStateProvider stateProvider)
+        public void Construct(IGameStateProvider stateProvider, GameSettings settings)
         {
             _stateProvider = stateProvider;
+            _settings = settings;
         }
         
         private void Awake()
@@ -59,7 +60,7 @@ namespace Gameplay.Car
         
         private void ResetCar()
         {
-            _currentHealth = _maxHealth;
+            _currentHealth = _settings.CarMaxHealth;
             _visuals.ResetVisuals();
             UpdateUI();
         }
@@ -67,7 +68,7 @@ namespace Gameplay.Car
         private void UpdateUI()
         {
             if (_healthSlider != null)
-                _healthSlider.value = (float)_currentHealth / _maxHealth;
+                _healthSlider.value = (float)_currentHealth / _settings.CarMaxHealth;
         }
     }
 }

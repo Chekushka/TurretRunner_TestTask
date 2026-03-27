@@ -2,20 +2,15 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Pool;
 using Common;
+using Core;
 using Gameplay.VFX;
+using JetBrains.Annotations;
+using VContainer;
 
 namespace Gameplay.Enemies
 {
     public class Enemy : MonoBehaviour, IDamageable
     {
-        [Header("Settings")]
-        [SerializeField] private float _moveSpeed = 4f;
-        [SerializeField] private float _detectionRadius = 15f;
-        [SerializeField] private float _attackRadius = 1.5f;
-        [SerializeField] private int _maxHealth = 100;
-        [SerializeField] private int _damageToCar = 10;
-        [SerializeField] private float _stunDuration = 0.3f;
-
         [Header("References")]
         [SerializeField] private Animator _animator;
         [SerializeField] private DamageVisualizer _damageVisualizer;
@@ -29,6 +24,7 @@ namespace Gameplay.Enemies
 
         private Transform _targetTransform;
         private IDamageable _targetHealth;
+        private GameSettings _settings;
         private IObjectPool<Enemy> _pool;
         private IObjectPool<PooledParticle> _deathParticlePool;
         private IObjectPool<DamagePopup> _damagePopupPool;
@@ -36,8 +32,9 @@ namespace Gameplay.Enemies
         private int _currentHealth;
         private EnemyState _currentState;
         private float _stunEndTime;
+       
 
-        public void Init(Transform targetTransform, IDamageable targetHealth, IObjectPool<Enemy> pool, IObjectPool<PooledParticle> deathParticlePool, IObjectPool<DamagePopup> damagePopupPool)
+        public void Init(Transform targetTransform, IDamageable targetHealth, IObjectPool<Enemy> pool, IObjectPool<PooledParticle> deathParticlePool, [CanBeNull] IObjectPool<DamagePopup> damagePopupPool, GameSettings settings)
         {
             _targetTransform = targetTransform;
             _targetHealth = targetHealth;
@@ -45,7 +42,9 @@ namespace Gameplay.Enemies
             _deathParticlePool = deathParticlePool;
             _damagePopupPool = damagePopupPool;
             
-            _currentHealth = _maxHealth;
+            _settings =  settings;
+            
+            _currentHealth = _settings.EnemyMaxHealth;
             _currentState = EnemyState.Idle;
             
             _healthCanvasObject.SetActive(false);
@@ -74,11 +73,11 @@ namespace Gameplay.Enemies
 
             float distance = Vector3.Distance(transform.position, _targetTransform.position);
 
-            if (distance <= _attackRadius)
+            if (distance <= _settings.AttackRadius)
             {
                 KamikazeAttack();
             }
-            else if (distance <= _detectionRadius)
+            else if (distance <= _settings.DetectionRadius)
             {
                 ChangeState(EnemyState.Running);
                 MoveTowardsTarget();
@@ -91,7 +90,7 @@ namespace Gameplay.Enemies
 
         private void KamikazeAttack()
         {
-            _targetHealth?.TakeDamage(_damageToCar);
+            _targetHealth?.TakeDamage(_settings.EnemyDamageToCar);
             Die();
         }
 
@@ -120,7 +119,7 @@ namespace Gameplay.Enemies
             Vector3 direction = (_targetTransform.position - transform.position).normalized;
             direction.y = 0;
             
-            transform.position += direction * (_moveSpeed * Time.deltaTime);
+            transform.position += direction * (_settings.EnemySpeed * Time.deltaTime);
             
             if (direction != Vector3.zero)
             {
@@ -156,13 +155,13 @@ namespace Gameplay.Enemies
         private void UpdateHealthUI()
         {
             if (!_healthCanvasObject.activeSelf) _healthCanvasObject.SetActive(true);
-            _healthSlider.value = (float)_currentHealth / _maxHealth;
+            _healthSlider.value = (float)_currentHealth / _settings.EnemyMaxHealth;
         }
 
         private void ApplyStun()
         {
             ChangeState(EnemyState.Stunned);
-            _stunEndTime = Time.time + _stunDuration;
+            _stunEndTime = Time.time + _settings.StunDuration;
         }
 
         private void Die()

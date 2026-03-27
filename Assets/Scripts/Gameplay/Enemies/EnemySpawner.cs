@@ -12,14 +12,9 @@ namespace Gameplay.Enemies
 {
     public class EnemySpawner : MonoBehaviour
     {
-        [Header("Spawn Zone Settings")] [SerializeField]
-        private float _chunkLenght = 40f;
-
-        [SerializeField] private int _enemiesPerChunk = 5;
+        [Header("Spawn Zone Settings")] 
+        [SerializeField] private float _chunkLenght = 40f;
         [SerializeField] private float _spawnAheadOffset = 50f;
-        [SerializeField] private float _roadWidth = 3f;
-
-        [Header("Limits")] [SerializeField] private int _maxActiveEnemies = 20;
 
         [Header("References")] 
         [SerializeField] private Enemy _enemyPrefab;
@@ -30,6 +25,7 @@ namespace Gameplay.Enemies
         private CarMovement _car;
         private CarHealth _carHealth;
         private RoadGenerator _roadGenerator;
+        private GameSettings _settings;
         private IObjectPool<Enemy> _enemyPool;
         private IObjectPool<PooledParticle> _deathParticlePool;
         private IObjectPool<DamagePopup> _damagePopupPool;
@@ -39,12 +35,13 @@ namespace Gameplay.Enemies
         private int _currentActiveCount;
 
         [Inject]
-        public void Construct(IGameStateProvider stateProvider, CarMovement car, CarHealth carHealth, RoadGenerator roadGenerator)
+        public void Construct(IGameStateProvider stateProvider, CarMovement car, CarHealth carHealth, RoadGenerator roadGenerator, GameSettings settings)
         {
             _stateProvider = stateProvider;
             _car = car;
             _carHealth = carHealth;
             _roadGenerator = roadGenerator;
+            _settings = settings;
         }
 
         private void Awake()
@@ -64,8 +61,8 @@ namespace Gameplay.Enemies
                     _currentActiveCount--;
                 },
                 actionOnDestroy: enemy => Destroy(enemy.gameObject),
-                defaultCapacity: _maxActiveEnemies,
-                maxSize: _maxActiveEnemies + 10
+                defaultCapacity: _settings.MaxActiveEnemies,
+                maxSize: _settings.MaxActiveEnemies + 10
             );
             
             _deathParticlePool = new ObjectPool<PooledParticle>(
@@ -142,11 +139,11 @@ namespace Gameplay.Enemies
 
         private void SpawnChunk()
         {
-            int enemiesToSpawn = Mathf.Min(_enemiesPerChunk, _maxActiveEnemies - _currentActiveCount);
+            int enemiesToSpawn = Mathf.Min(_settings.EnemiesPerChunk, _settings.MaxActiveEnemies - _currentActiveCount);
 
             for (int i = 0; i < enemiesToSpawn; i++)
             {
-                float randomX = Random.Range(-_roadWidth, _roadWidth);
+                float randomX = Random.Range(-_settings.RoadWidth, _settings.RoadWidth);
                 float randomZ = Random.Range(_nextChunkZ, _nextChunkZ + _chunkLenght);
                 
                 float randomRotationY = Random.Range(0f, 360f);
@@ -157,7 +154,7 @@ namespace Gameplay.Enemies
                 Enemy enemy = _enemyPool.Get();
                 enemy.transform.position = spawnPos;
                 enemy.transform.SetPositionAndRotation(spawnPos, spawnRotation);
-                enemy.Init(_car.transform, _carHealth, _enemyPool, _deathParticlePool, _damagePopupPool);
+                enemy.Init(_car.transform, _carHealth, _enemyPool, _deathParticlePool, _damagePopupPool, _settings);
             }
 
             _nextChunkZ += _chunkLenght;
