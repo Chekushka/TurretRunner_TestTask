@@ -1,5 +1,8 @@
+using System.Collections.Generic;
 using Core;
 using Gameplay.Car;
+using Gameplay.Environment;
+using Gameplay.VFX;
 using UnityEngine;
 using UnityEngine.Pool;
 using VContainer;
@@ -21,22 +24,27 @@ namespace Gameplay.Enemies
         [Header("References")] 
         [SerializeField] private Enemy _enemyPrefab;
         [SerializeField] private PooledParticle _deathParticlePrefab;
+        [SerializeField] private DamagePopup _damagePopupPrefab;
 
         private IGameStateProvider _stateProvider;
         private CarMovement _car;
         private CarHealth _carHealth;
+        private RoadGenerator _roadGenerator;
         private IObjectPool<Enemy> _enemyPool;
         private IObjectPool<PooledParticle> _deathParticlePool;
+        private IObjectPool<DamagePopup> _damagePopupPool;
+        private readonly List<Enemy> _activeEnemiesList = new();
 
         private float _nextChunkZ;
         private int _currentActiveCount;
 
         [Inject]
-        public void Construct(IGameStateProvider stateProvider, CarMovement car, CarHealth carHealth)
+        public void Construct(IGameStateProvider stateProvider, CarMovement car, CarHealth carHealth, RoadGenerator roadGenerator)
         {
             _stateProvider = stateProvider;
             _car = car;
             _carHealth = carHealth;
+            _roadGenerator = roadGenerator;
         }
 
         private void Awake()
@@ -46,11 +54,13 @@ namespace Gameplay.Enemies
                 actionOnGet: enemy =>
                 {
                     enemy.gameObject.SetActive(true);
+                    _activeEnemiesList.Add(enemy);
                     _currentActiveCount++;
                 },
                 actionOnRelease: enemy =>
                 {
                     enemy.gameObject.SetActive(false);
+                    _activeEnemiesList.Remove(enemy);
                     _currentActiveCount--;
                 },
                 actionOnDestroy: enemy => Destroy(enemy.gameObject),
@@ -68,7 +78,20 @@ namespace Gameplay.Enemies
                 actionOnRelease: particle => particle.gameObject.SetActive(false),
                 actionOnDestroy: particle => Destroy(particle.gameObject),
                 defaultCapacity: 20,
-                maxSize: 50
+                maxSize: 30
+            );
+            
+            _damagePopupPool = new ObjectPool<DamagePopup>(
+                createFunc: () => {
+                    var popup = Instantiate(_damagePopupPrefab, transform);
+                    popup.Init(_damagePopupPool);
+                    return popup;
+                },
+                actionOnGet: popup => popup.gameObject.SetActive(true),
+                actionOnRelease: popup => popup.gameObject.SetActive(false),
+                actionOnDestroy: popup => Destroy(popup.gameObject),
+                defaultCapacity: 20,
+                maxSize: 30
             );
         }
 
@@ -87,7 +110,19 @@ namespace Gameplay.Enemies
             {
                 _nextChunkZ = _car.transform.position.z + 20f;
                 SpawnInitialEnemies();
+                ResetSpawner();
             }
+        }
+        
+        private void ResetSpawner()
+        {
+            for (int i = _activeEnemiesList.Count - 1; i >= 0; i--)
+            {
+                _enemyPool.Release(_activeEnemiesList[i]);
+            }
+
+            _nextChunkZ = _car.transform.position.z + 20f; 
+            SpawnInitialEnemies();
         }
 
         private void Update()
@@ -122,7 +157,7 @@ namespace Gameplay.Enemies
                 Enemy enemy = _enemyPool.Get();
                 enemy.transform.position = spawnPos;
                 enemy.transform.SetPositionAndRotation(spawnPos, spawnRotation);
-                enemy.Init(_car.transform, _carHealth, _enemyPool, _deathParticlePool);
+                enemy.Init(_car.transform, _carHealth, _enemyPool, _deathParticlePool, _damagePopupPool);
             }
 
             _nextChunkZ += _chunkLenght;

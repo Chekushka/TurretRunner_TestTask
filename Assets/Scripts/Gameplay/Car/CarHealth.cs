@@ -3,43 +3,65 @@ using UnityEngine.UI;
 using VContainer;
 using Common;
 using Core;
+using Gameplay.VFX;
 
 namespace Gameplay.Car
 {
+    [RequireComponent(typeof(CarVisuals))]
     public class CarHealth : MonoBehaviour, IDamageable
     {
+        [Header("Settings")]
         [SerializeField] private int _maxHealth = 500;
         [SerializeField] private Slider _healthSlider;
-        [SerializeField] private DamageVisualizer _damageVisualizer;
 
         private int _currentHealth;
         private IGameStateProvider _stateProvider;
+        private CarVisuals _visuals;
 
         [Inject]
         public void Construct(IGameStateProvider stateProvider)
         {
             _stateProvider = stateProvider;
         }
-
-        private void Start()
+        
+        private void Awake()
         {
-            _currentHealth = _maxHealth;
-            UpdateUI();
+            _visuals = GetComponent<CarVisuals>();
         }
-
-        public void TakeDamage(int amount)
+        
+        private void OnEnable() => _stateProvider.OnStateChanged += HandleStateChanged;
+        private void OnDisable() => _stateProvider.OnStateChanged -= HandleStateChanged;
+        
+        private void HandleStateChanged(GameState newState)
         {
-            if (_stateProvider.CurrentState != GameState.Gameplay) return;
+            if (newState == GameState.ReadyToPlay)
+            {
+                ResetCar();
+            }
+        }
+        
+        private void Start() => ResetCar();
+
+        public void TakeDamage(int amount, bool isCritical = false)
+        {
+            if (_stateProvider.CurrentState != GameState.Gameplay || _currentHealth <= 0) return;
 
             _currentHealth -= amount;
             UpdateUI();
-            
-            if (_damageVisualizer != null) _damageVisualizer.PlayHitEffect();
+            _visuals.DamageVisualizer.PlayHitEffect();
 
             if (_currentHealth <= 0)
             {
+                _visuals.SetDestructionVisuals();
                 _stateProvider.ChangeState(GameState.Lost);
             }
+        }
+        
+        private void ResetCar()
+        {
+            _currentHealth = _maxHealth;
+            _visuals.ResetVisuals();
+            UpdateUI();
         }
 
         private void UpdateUI()

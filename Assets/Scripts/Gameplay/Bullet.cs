@@ -16,13 +16,15 @@ namespace Gameplay
         private int _damage;
         private Vector3 _destination;
         private bool _isTracking;
+        private bool _isCritical;
         
-        public void Init(Vector3 startPos, Vector3 hitPoint, IDamageable target, int damage, IObjectPool<Bullet> pool)
+        public void Init(Vector3 startPos, Vector3 hitPoint, IDamageable target, int damage, bool isCritical, IObjectPool<Bullet> pool)
         {
             transform.position = startPos;
             _destination = hitPoint;
             _target = target;
             _damage = damage;
+            _isCritical = isCritical;
             _pool = pool;
             _isTracking = target != null;
             _trail.Clear();
@@ -47,7 +49,7 @@ namespace Gameplay
         {
             if (_isTracking && _target is MonoBehaviour targetObj && targetObj.gameObject.activeInHierarchy)
             {
-                _target.TakeDamage(_damage);
+                _target.TakeDamage(_damage, _isCritical);
             }
             
             _pool.Release(this);

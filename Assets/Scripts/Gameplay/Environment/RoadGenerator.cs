@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Core;
 using Gameplay.Car;
@@ -17,19 +18,21 @@ namespace Gameplay.Environment
         [SerializeField] private RoadSegment _middleSegmentPrefab;
         [SerializeField] private RoadSegment _finishSegment;
 
+        public float LevelDistance => _levelDistance;
         private IGameStateProvider _stateProvider;
         private readonly Queue<RoadSegment> _activeSegments = new();
+        private IObjectResolver _container;
         private CarMovement _car;
     
         private float _nextSpawnZ;
         private bool _finishSpawned;
 
         [Inject]
-        public void Construct(IGameStateProvider stateProvider, CarMovement car)
+        public void Construct(IGameStateProvider stateProvider)
         {
             _stateProvider = stateProvider;
-            _car = car;
         }
+        public void SetCar(CarMovement car) => _car = car;
 
         private void OnEnable()
         {
@@ -81,7 +84,7 @@ namespace Gameplay.Environment
         private void Update()
         {
             if (_stateProvider.CurrentState != GameState.Gameplay) return;
-        
+            
             if (_car.transform.position.z > _activeSegments.Peek().transform.position.z + _activeSegments.Peek().Length)
             {
                 HandleSegmentCycling();

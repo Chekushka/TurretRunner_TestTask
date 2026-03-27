@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Pool;
 
-namespace Gameplay
+namespace Gameplay.VFX
 {
     [RequireComponent(typeof(ParticleSystem))]
     public class PooledParticle : MonoBehaviour

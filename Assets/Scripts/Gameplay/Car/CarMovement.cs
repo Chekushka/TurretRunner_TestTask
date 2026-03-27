@@ -1,4 +1,6 @@
 using Core;
+using DG.Tweening;
+using Gameplay.Environment;
 using UnityEngine;
 using VContainer;
 using Random = UnityEngine.Random;
@@ -21,33 +23,37 @@ namespace Gameplay.Car
         [SerializeField] private float _minDriftInterval = 3f;
         [SerializeField] private float _maxDriftInterval = 5f;
 
-        [Header("Wheels Visuals")] [SerializeField]
-        private Transform[] _frontWheels;
-
-        [SerializeField] private Transform[] _rearWheels;
-        [SerializeField] private float _wheelRadius = 0.3f;
-
         private IGameStateProvider _stateProvider;
+        private RoadGenerator _roadGenerator;
+        private CarVisuals _visuals;
 
         private float _targetX;
         private float _currentVelocityX;
         private float _nextDriftTime;
         private bool _isFirstDriftSet;
+        
+        private Vector3 _startPosition;
+        private Quaternion _startRotation;
 
         private float _currentWheelRollAngle;
 
         [Inject]
-        public void Construct(IGameStateProvider stateProvider)
+        public void Construct(IGameStateProvider stateProvider, RoadGenerator roadGenerator)
         {
             _stateProvider = stateProvider;
+            _roadGenerator = roadGenerator;
         }
 
         private void Awake()
         {
             var rb = GetComponent<Rigidbody>();
+            _visuals = GetComponent<CarVisuals>();
             rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
             rb.isKinematic = true;
             rb.interpolation = RigidbodyInterpolation.None;
+            _startPosition = transform.position;
+            _startRotation = transform.rotation;
+            _roadGenerator.SetCar(this);
         }
 
         private void OnEnable()
@@ -68,6 +74,12 @@ namespace Gameplay.Car
                 _nextDriftTime = Time.time + Random.Range(_minDriftInterval, _maxDriftInterval) + 5f;
                 _isFirstDriftSet = true;
             }
+            else if (newState == GameState.ReadyToPlay)
+            {
+                transform.DOKill(); 
+                transform.position = _startPosition;
+                transform.rotation = _startRotation;
+            }
         }
 
         private void Update()
@@ -76,7 +88,7 @@ namespace Gameplay.Car
 
             HandleDriftTimer();
             MoveAndRotateCar();
-            AnimateWheels();
+            CheckFinishLine();
         }
 
         private void HandleDriftTimer()
@@ -118,29 +130,30 @@ namespace Gameplay.Car
 
             Quaternion targetRotation = Quaternion.Euler(0f, targetAngle, 0f);
             transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * _tiltSpeed);
+            _visuals.AnimateWheels(_forwardSpeed);
         }
-
-        private void AnimateWheels()
+        
+        private void CheckFinishLine()
         {
-            float wheelCircumference = 2 * Mathf.PI * _wheelRadius;
-            float degreesPerSecond = (_forwardSpeed / wheelCircumference) * 360f;
-
-            _currentWheelRollAngle += degreesPerSecond * Time.deltaTime;
-
-            float steerAngle = transform.rotation.eulerAngles.y;
-            if (steerAngle > 180f) steerAngle -= 360f;
-
-            float exaggeratedSteer = steerAngle * 1.5f;
-
-            foreach (var wheel in _frontWheels)
+            if (transform.position.z >= _roadGenerator.LevelDistance)
             {
-                wheel.localRotation = Quaternion.Euler(_currentWheelRollAngle, exaggeratedSteer, 0);
+                TriggerFinishSequence();
             }
-
-            foreach (var wheel in _rearWheels)
-            {
-                wheel.localRotation = Quaternion.Euler(_currentWheelRollAngle, 0, 0);
-            }
+        }
+        
+        private void TriggerFinishSequence()
+        {
+            _stateProvider.ChangeState(GameState.Won);
+            Vector3 targetPos = transform.position + new Vector3(0, 0, 10f);
+            
+            transform.DOMove(targetPos, 1.5f).SetEase(Ease.OutCubic);
+            transform.DORotate(new Vector3(0, 90f, 0), 1.5f, RotateMode.Fast)
+                .SetEase(Ease.OutQuad)
+                .OnComplete(() => 
+                {
+                    // TODO: Add particles
+                    Debug.Log("Finish Animation Complete");
+                });
         }
     }
 }

@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Pool;
 using Common;
+using Gameplay.VFX;
 
 namespace Gameplay.Enemies
 {
@@ -30,17 +31,19 @@ namespace Gameplay.Enemies
         private IDamageable _targetHealth;
         private IObjectPool<Enemy> _pool;
         private IObjectPool<PooledParticle> _deathParticlePool;
+        private IObjectPool<DamagePopup> _damagePopupPool;
         
         private int _currentHealth;
         private EnemyState _currentState;
         private float _stunEndTime;
 
-        public void Init(Transform targetTransform, IDamageable targetHealth, IObjectPool<Enemy> pool, IObjectPool<PooledParticle> deathParticlePool)
+        public void Init(Transform targetTransform, IDamageable targetHealth, IObjectPool<Enemy> pool, IObjectPool<PooledParticle> deathParticlePool, IObjectPool<DamagePopup> damagePopupPool)
         {
             _targetTransform = targetTransform;
             _targetHealth = targetHealth;
             _pool = pool;
             _deathParticlePool = deathParticlePool;
+            _damagePopupPool = damagePopupPool;
             
             _currentHealth = _maxHealth;
             _currentState = EnemyState.Idle;
@@ -126,11 +129,16 @@ namespace Gameplay.Enemies
             }
         }
 
-        public void TakeDamage(int amount)
+        public void TakeDamage(int amount, bool isCritical = false)
         {
             if (_currentState == EnemyState.Dead) return;
 
             _currentHealth -= amount;
+            if (_damagePopupPool != null)
+            {
+                DamagePopup popup = _damagePopupPool.Get();
+                popup.Setup(amount, transform.position, isCritical);
+            }
             UpdateHealthUI();
             
             if (_damageVisualizer != null) _damageVisualizer.PlayHitEffect();

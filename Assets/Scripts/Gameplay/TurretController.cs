@@ -6,6 +6,7 @@ using Infrastructure;
 using UnityEngine;
 using UnityEngine.Pool;
 using VContainer;
+using Random = UnityEngine.Random;
 
 namespace Gameplay
 {
@@ -23,6 +24,9 @@ namespace Gameplay
         [SerializeField] private int _damage = 34;
         [SerializeField] private float _range = 40f;
         [SerializeField] private float hitboxRadius = 0.5f;
+        [SerializeField] private float _damageVariance = 0.1f;
+        [SerializeField] private float _critChance = 0.2f;
+        [SerializeField] private float _critMultiplier = 1.5f;
         [SerializeField] private LayerMask _enemyLayer;
         
         [Header("Movement and Feel")]
@@ -114,8 +118,17 @@ namespace Gameplay
                 hit.collider.TryGetComponent(out target);
             }
             
+            float randomModifier = Random.Range(1f - _damageVariance, 1f + _damageVariance);
+            int finalDamage = Mathf.RoundToInt(_damage * randomModifier);
+            
+            bool isCritical = Random.Range(0f, 1f) <= _critChance;
+            if (isCritical)
+            {
+                finalDamage = Mathf.RoundToInt(finalDamage * _critMultiplier);
+            }
+
             Bullet bullet = _bulletPool.Get();
-            bullet.Init(_firePoint.position, hitPoint, target, _damage, _bulletPool);
+            bullet.Init(_firePoint.position, hitPoint, target, finalDamage, isCritical, _bulletPool);
         }
         
         private void PlayShootEffects()
