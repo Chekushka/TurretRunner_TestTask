@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Core.GameSettings
   CarForwardSpeed: 8
   CarTiltSpeed: 5
+  MaxTiltAngle: 12
   CarMaxHealth: 200
   DriftSmoothTime: 0.8
-  MaxTiltAngle: 12
   MinDriftInterval: 3
   MaxDriftInterval: 5
   WeaponDamage: 30
@@ -30,10 +30,10 @@ MonoBehaviour:
   EnemySpeed: 3
   EnemyDamageToCar: 10
   DetectionRadius: 10
-  AttackRadius: 3.5
+  AttackRadius: 2
   StunDuration: 0.4
   LevelDistance: 5
-  RoadSegmentsInReserve: 5
-  EnemiesPerChunk: 4
-  MaxActiveEnemies: 15
   RoadWidth: 3.5
+  RoadSegmentsInReserve: 5
+  EnemiesPerChunk: 8
+  MaxActiveEnemies: 30

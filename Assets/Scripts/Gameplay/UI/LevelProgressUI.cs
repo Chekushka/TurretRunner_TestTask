@@ -9,10 +9,11 @@ namespace Gameplay.UI
 {
     public class LevelProgressUI : MonoBehaviour
     {
-        [Header("References")]
-        [SerializeField] private Slider _progressSlider;
+        [Header("References")] [SerializeField]
+        private Slider _progressSlider;
 
-        private const float DistanceMultiplier = 35f;
+        private const float DistanceMultiplier = 70f;
+        private float _totalDistance;
         private IGameStateProvider _stateProvider;
         private RoadGenerator _roadGenerator;
         private CarMovement _car;
@@ -24,11 +25,22 @@ namespace Gameplay.UI
             _roadGenerator = roadGenerator;
             _car = car;
         }
+        
+        private void OnEnable() => _stateProvider.OnStateChanged += HandleStateChanged;
+
+        private void OnDisable() => _stateProvider.OnStateChanged -= HandleStateChanged;
+
+        private void HandleStateChanged(GameState newState)
+        {
+            if (newState == GameState.ReadyToPlay)
+            {
+               ResetProgress();
+            }
+        }
 
         private void Start()
         {
-            if (_progressSlider != null)
-                _progressSlider.value = 0f;
+           ResetProgress();
         }
 
         private void Update()
@@ -41,12 +53,19 @@ namespace Gameplay.UI
         private void UpdateProgress()
         {
             float currentZ = _car.transform.position.z;
-            float totalZ = _roadGenerator.TotalLevelDistance * DistanceMultiplier;
-            
-            float progress = Mathf.Clamp01(currentZ / totalZ);
-            
+            float progress = Mathf.Clamp01(currentZ / _totalDistance);
+
             if (_progressSlider != null)
                 _progressSlider.value = progress;
+        }
+
+        private void ResetProgress()
+        {
+            if (_progressSlider != null)
+            {
+                _progressSlider.value = 0f;
+                _totalDistance = (_roadGenerator.TotalLevelDistance + 1) * DistanceMultiplier - DistanceMultiplier / 2;
+            }
         }
     }
 }

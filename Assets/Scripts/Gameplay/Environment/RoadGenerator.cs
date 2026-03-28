@@ -24,6 +24,7 @@ namespace Gameplay.Environment
         
         public float ActualFinishZ => _actualFinishZ;
         public float TotalLevelDistance => _settings.LevelDistance;
+        public bool IsFinishSpawned => _finishSpawned;
 
         [Inject]
         public void Construct(IGameStateProvider stateProvider, GameSettings gameSettings)

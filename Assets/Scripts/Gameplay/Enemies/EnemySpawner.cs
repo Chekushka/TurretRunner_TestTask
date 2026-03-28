@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using Core;
 using Gameplay.Car;
 using Gameplay.Environment;
 using Gameplay.VFX;
+using Infrastructure;
 using UnityEngine;
 using UnityEngine.Pool;
 using VContainer;
@@ -32,7 +34,7 @@ namespace Gameplay.Enemies
         private readonly List<Enemy> _activeEnemiesList = new();
 
         private float _nextChunkZ;
-        private int _currentActiveCount;
+        private const float DistanceMultiplier = 70f;
 
         [Inject]
         public void Construct(IGameStateProvider stateProvider, CarMovement car, CarHealth carHealth, RoadGenerator roadGenerator, GameSettings settings)
@@ -52,13 +54,11 @@ namespace Gameplay.Enemies
                 {
                     enemy.gameObject.SetActive(true);
                     _activeEnemiesList.Add(enemy);
-                    _currentActiveCount++;
                 },
                 actionOnRelease: enemy =>
                 {
                     enemy.gameObject.SetActive(false);
                     _activeEnemiesList.Remove(enemy);
-                    _currentActiveCount--;
                 },
                 actionOnDestroy: enemy => Destroy(enemy.gameObject),
                 defaultCapacity: _settings.MaxActiveEnemies,
@@ -92,6 +92,13 @@ namespace Gameplay.Enemies
             );
         }
 
+        private void Start()
+        {
+            _damagePopupPool.Prewarm(10);
+            _deathParticlePool.Prewarm(10);
+            _enemyPool.Prewarm(10);
+        }
+
         private void OnEnable()
         {
             _stateProvider.OnStateChanged += HandleStateChanged;
@@ -109,23 +116,33 @@ namespace Gameplay.Enemies
                 SpawnInitialEnemies();
                 ResetSpawner();
             }
+            else if (state == GameState.Won)
+            {
+                ClearAllEnemies();
+            }
         }
         
         private void ResetSpawner()
+        {
+            ClearAllEnemies();
+            
+            _nextChunkZ = 20f; 
+            SpawnInitialEnemies();
+        }
+        
+        private void ClearAllEnemies()
         {
             for (int i = _activeEnemiesList.Count - 1; i >= 0; i--)
             {
                 _enemyPool.Release(_activeEnemiesList[i]);
             }
-
-            _nextChunkZ = _car.transform.position.z + 20f; 
-            SpawnInitialEnemies();
         }
 
         private void Update()
         {
             if (_stateProvider.CurrentState != GameState.Gameplay) return;
-
+            float distanceToFinish = (_roadGenerator.TotalLevelDistance - 1) * DistanceMultiplier - _car.transform.position.z;
+            if(distanceToFinish < 10f) return;
             if (_car.transform.position.z + _spawnAheadOffset >= _nextChunkZ)
             {
                 SpawnChunk();
@@ -134,12 +151,13 @@ namespace Gameplay.Enemies
 
         private void SpawnInitialEnemies()
         {
-            SpawnChunk();
+            for (int i = 0; i < 3; i++)
+                SpawnChunk();
         }
 
         private void SpawnChunk()
         {
-            int enemiesToSpawn = Mathf.Min(_settings.EnemiesPerChunk, _settings.MaxActiveEnemies - _currentActiveCount);
+            int enemiesToSpawn = Mathf.Min(_settings.EnemiesPerChunk, _settings.MaxActiveEnemies - _activeEnemiesList.Count);
 
             for (int i = 0; i < enemiesToSpawn; i++)
             {

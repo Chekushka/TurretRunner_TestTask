@@ -39,8 +39,9 @@ The project strictly follows the **Separation of Concerns (SoC)** principle:
 ## Getting Started
 
 1.  **Clone the Repo**: `git clone https://github.com/your-username/TurretRunner.git`
-2.  **Unity Version**: Recommended 2022.3 LTS or newer.
+2.  **Unity Version**: Recommended **6000.3 LTS** or newer.
 3.  **Dependencies**: Project requires **VContainer**, **DOTween**, and **TextMeshPro**.
-4.  **Configuration**: 
-    * Assign the `GameSettings` ScriptableObject to the `GameLifetimeScope` on the scene.
-    * Open `Gameplay.unity` scene and press **Play**.
+4.  **Configuration**:
+   * Open `Main.unity` scene and press **Play**.
+   * Assign the `GameSettings` ScriptableObject to the `GameLifetimeScope` on the scene.
+   
